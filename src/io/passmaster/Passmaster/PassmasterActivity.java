@@ -92,7 +92,7 @@ public class PassmasterActivity extends Activity {
     public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
       result.confirm();
       Toast toast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG);
-      toast.setGravity(Gravity.TOP, 0, 0);
+      toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.TOP, 0, 0);
       toast.show();
       return true;
     }
