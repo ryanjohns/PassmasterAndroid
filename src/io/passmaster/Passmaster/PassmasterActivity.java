@@ -7,49 +7,83 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.Configuration;
 import android.view.Gravity;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 public class PassmasterActivity extends Activity {
 
   public static final String PASSMASTER_URL = "https://passmaster.io/";
   private final Activity passmasterActivity = this;
+  private FrameLayout webViewPlaceholder;
+  private WebView webView;
 
-  @SuppressLint("SetJavaScriptEnabled") @Override
+  @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_passmaster);
-    WebView webView = (WebView) findViewById(R.id.webView);
-    WebSettings webSettings = webView.getSettings();
-    String cachePath = getApplicationContext().getCacheDir().getAbsolutePath();
-    webSettings.setAppCachePath(cachePath);
-    webSettings.setAppCacheEnabled(true);
-    webSettings.setDatabasePath(cachePath);
-    webSettings.setDatabaseEnabled(true);
-    webSettings.setDomStorageEnabled(true);
-    webSettings.setJavaScriptEnabled(true);
-    PackageInfo pInfo = null;
-    try {
-      pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-    } catch (NameNotFoundException e) {
-      // do nothing because this will never happen
-    }
-    webSettings.setUserAgentString(webSettings.getUserAgentString() + " PassmasterAndroid/" + pInfo.versionName);
-    webView.setWebViewClient(new PassmasterWebViewClient());
-    webView.setWebChromeClient(new PassmasterWebChromeClient());
-    webView.addJavascriptInterface(new PassmasterJsInterface(webView), PassmasterJsInterface.JS_NAMESPACE);
-    webView.loadUrl(PASSMASTER_URL);
+    initUI();
   }
 
   @Override
   protected void onRestart() {
     super.onRestart();
-    WebView webView = (WebView) findViewById(R.id.webView);
     webView.loadUrl("javascript:MobileApp.updateAppCache();");
+  }
+
+  @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+    if (webView != null) {
+      webViewPlaceholder.removeView(webView);
+    }
+    super.onConfigurationChanged(newConfig);
+    setContentView(R.layout.activity_passmaster);
+    initUI();
+  }
+
+  @Override
+  protected void onRestoreInstanceState(Bundle savedInstanceState) {
+    super.onRestoreInstanceState(savedInstanceState);
+    webView.restoreState(savedInstanceState);
+  }
+
+  @Override
+  protected void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
+    webView.saveState(outState);
+  }
+
+  @SuppressLint("SetJavaScriptEnabled")
+  private void initUI() {
+    webViewPlaceholder = (FrameLayout) findViewById(R.id.webViewPlaceholder);
+    if (webView == null) {
+      webView = new WebView(this);
+      PackageInfo pInfo = null;
+      try {
+        pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+      } catch (NameNotFoundException e) {
+        // do nothing because this will never happen
+      }
+      String cachePath = getApplicationContext().getCacheDir().getAbsolutePath();
+      WebSettings webSettings = webView.getSettings();
+      webSettings.setAppCachePath(cachePath);
+      webSettings.setAppCacheEnabled(true);
+      webSettings.setDatabasePath(cachePath);
+      webSettings.setDatabaseEnabled(true);
+      webSettings.setDomStorageEnabled(true);
+      webSettings.setJavaScriptEnabled(true);
+      webSettings.setUserAgentString(webSettings.getUserAgentString() + " PassmasterAndroid/" + pInfo.versionName);
+      webView.setWebViewClient(new PassmasterWebViewClient());
+      webView.setWebChromeClient(new PassmasterWebChromeClient());
+      webView.addJavascriptInterface(new PassmasterJsInterface(webView), PassmasterJsInterface.JS_NAMESPACE);
+      webView.loadUrl(PASSMASTER_URL);
+    }
+    webViewPlaceholder.addView(webView);
   }
 
   // inner class for handling alert and confirmation dialogs
