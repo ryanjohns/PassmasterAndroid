@@ -3,13 +3,21 @@ package io.passmaster.Passmaster;
 import android.os.Bundle;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.view.Gravity;
+import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.Toast;
 
 public class PassmasterActivity extends Activity {
 
   public static final String PASSMASTER_URL = "https://passmaster.io/";
+  private final Activity passmasterActivity = this;
 
   @SuppressLint("SetJavaScriptEnabled") @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -24,9 +32,15 @@ public class PassmasterActivity extends Activity {
     webSettings.setDatabaseEnabled(true);
     webSettings.setDomStorageEnabled(true);
     webSettings.setJavaScriptEnabled(true);
-    PassmasterWebViewClient webViewClient = new PassmasterWebViewClient();
-    webView.setWebViewClient(webViewClient);
-    webView.setWebChromeClient(new WebChromeClient());
+    PackageInfo pInfo = null;
+    try {
+      pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+    } catch (NameNotFoundException e) {
+      // do nothing because this will never happen
+    }
+    webSettings.setUserAgentString(webSettings.getUserAgentString() + " PassmasterAndroid/" + pInfo.versionName);
+    webView.setWebViewClient(new PassmasterWebViewClient());
+    webView.setWebChromeClient(new PassmasterWebChromeClient());
     webView.addJavascriptInterface(new PassmasterJsInterface(webView), PassmasterJsInterface.JS_NAMESPACE);
     webView.loadUrl(PASSMASTER_URL);
   }
@@ -36,6 +50,37 @@ public class PassmasterActivity extends Activity {
     super.onRestart();
     WebView webView = (WebView) findViewById(R.id.webView);
     webView.loadUrl("javascript:MobileApp.updateAppCache();");
+  }
+
+  // inner class for handling alert and confirmation dialogs
+  private class PassmasterWebChromeClient extends WebChromeClient {
+    @Override
+    public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+      result.confirm();
+      Toast toast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG);
+      toast.setGravity(Gravity.TOP, 0, 0);
+      toast.show();
+      return true;
+    }
+
+    @Override
+    public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
+      AlertDialog.Builder builder = new AlertDialog.Builder(passmasterActivity);
+      builder.setMessage(message);
+      builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int id) {
+          result.confirm();
+        }
+      });
+      builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int id) {
+          result.cancel();
+        }
+      });
+      builder.create();
+      builder.show();
+      return true;
+    }
   }
 
 }
