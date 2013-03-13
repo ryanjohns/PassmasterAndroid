@@ -12,6 +12,7 @@ import android.view.Gravity;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
+import android.webkit.WebStorage.QuotaUpdater;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.Toast;
@@ -77,6 +78,7 @@ public class PassmasterActivity extends Activity {
       webSettings.setDatabaseEnabled(true);
       webSettings.setDomStorageEnabled(true);
       webSettings.setJavaScriptEnabled(true);
+      webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
       webSettings.setUserAgentString(webSettings.getUserAgentString() + " PassmasterAndroid/" + pInfo.versionName);
       webView.setWebViewClient(new PassmasterWebViewClient());
       webView.setWebChromeClient(new PassmasterWebChromeClient());
@@ -114,6 +116,11 @@ public class PassmasterActivity extends Activity {
       builder.create();
       builder.show();
       return true;
+    }
+
+    @Override
+    public void onReachedMaxAppCacheSize(long requiredStorage, long quota, QuotaUpdater quotaUpdater) {
+      quotaUpdater.updateQuota(requiredStorage * 2);
     }
   }
 
