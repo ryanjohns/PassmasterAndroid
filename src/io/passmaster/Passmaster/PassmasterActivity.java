@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -20,15 +21,21 @@ import android.widget.Toast;
 public class PassmasterActivity extends Activity {
 
   public static final String PASSMASTER_URL = "https://passmaster.io/";
+  private static Context context;
   private final Activity passmasterActivity = this;
   private FrameLayout webViewPlaceholder;
   private WebView webView;
+
+  public static Context getAppContext() {
+    return PassmasterActivity.context;
+  }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_passmaster);
     initUI();
+    PassmasterActivity.context = getApplicationContext();
   }
 
   @Override
@@ -94,7 +101,7 @@ public class PassmasterActivity extends Activity {
     public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
       result.confirm();
       Toast toast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG);
-      toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.TOP, 0, 0);
+      toast.setGravity(Gravity.CENTER, 0, 0);
       toast.show();
       return true;
     }
