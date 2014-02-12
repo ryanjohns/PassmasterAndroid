@@ -13,7 +13,6 @@ import android.view.Gravity;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
-import android.webkit.WebStorage.QuotaUpdater;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.Toast;
@@ -81,13 +80,11 @@ public class PassmasterActivity extends Activity {
       WebSettings webSettings = webView.getSettings();
       webSettings.setAppCachePath(cachePath);
       webSettings.setAppCacheEnabled(true);
-      webSettings.setDatabasePath(cachePath);
       webSettings.setDatabaseEnabled(true);
       webSettings.setDomStorageEnabled(true);
       webSettings.setJavaScriptEnabled(true);
-      webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
       webSettings.setUserAgentString(webSettings.getUserAgentString() + " PassmasterAndroid/" + pInfo.versionName);
-      webView.setWebViewClient(new PassmasterWebViewClient());
+      webView.setWebViewClient(new PassmasterWebViewClient(this));
       webView.setWebChromeClient(new PassmasterWebChromeClient());
       webView.addJavascriptInterface(new PassmasterJsInterface(webView), PassmasterJsInterface.JS_NAMESPACE);
       webView.loadUrl(PASSMASTER_URL);
@@ -123,11 +120,6 @@ public class PassmasterActivity extends Activity {
       builder.create();
       builder.show();
       return true;
-    }
-
-    @Override
-    public void onReachedMaxAppCacheSize(long requiredStorage, long quota, QuotaUpdater quotaUpdater) {
-      quotaUpdater.updateQuota(requiredStorage * 2);
     }
   }
 
