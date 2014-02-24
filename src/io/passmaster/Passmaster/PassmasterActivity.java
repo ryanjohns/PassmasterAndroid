@@ -3,44 +3,36 @@ package io.passmaster.Passmaster;
 import android.os.Bundle;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
-import android.view.Gravity;
-import android.webkit.JsResult;
-import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 public class PassmasterActivity extends Activity {
 
   public static final String PASSMASTER_URL = "https://passmaster.io/";
-  private static Context context;
-  private final Activity passmasterActivity = this;
+  private final String reloadFunction = "javascript:" +
+      "if (typeof(MobileApp) == 'object' && typeof(MobileApp.appLoaded) == 'function' && MobileApp.appLoaded() == 'YES') {" +
+        "MobileApp.updateAppCache();" +
+      "} else {" +
+        PassmasterJsInterface.JS_NAMESPACE + ".loadPassmaster();" +
+      "}";
   private FrameLayout webViewPlaceholder;
   private WebView webView;
-
-  public static Context getAppContext() {
-    return PassmasterActivity.context;
-  }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_passmaster);
     initUI();
-    PassmasterActivity.context = getApplicationContext();
   }
 
   @Override
   protected void onRestart() {
     super.onRestart();
-    webView.loadUrl("javascript:MobileApp.updateAppCache();");
+    webView.loadUrl(reloadFunction);
   }
 
   @Override
@@ -85,42 +77,11 @@ public class PassmasterActivity extends Activity {
       webSettings.setJavaScriptEnabled(true);
       webSettings.setUserAgentString(webSettings.getUserAgentString() + " PassmasterAndroid/" + pInfo.versionName);
       webView.setWebViewClient(new PassmasterWebViewClient(this));
-      webView.setWebChromeClient(new PassmasterWebChromeClient());
-      webView.addJavascriptInterface(new PassmasterJsInterface(webView), PassmasterJsInterface.JS_NAMESPACE);
+      webView.setWebChromeClient(new PassmasterWebChromeClient(this));
+      webView.addJavascriptInterface(new PassmasterJsInterface(this, webView), PassmasterJsInterface.JS_NAMESPACE);
       webView.loadUrl(PASSMASTER_URL);
     }
     webViewPlaceholder.addView(webView);
-  }
-
-  // inner class for handling alert and confirmation dialogs
-  private class PassmasterWebChromeClient extends WebChromeClient {
-    @Override
-    public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
-      result.confirm();
-      Toast toast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG);
-      toast.setGravity(Gravity.CENTER, 0, 0);
-      toast.show();
-      return true;
-    }
-
-    @Override
-    public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
-      AlertDialog.Builder builder = new AlertDialog.Builder(passmasterActivity);
-      builder.setMessage(message);
-      builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int id) {
-          result.confirm();
-        }
-      });
-      builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int id) {
-          result.cancel();
-        }
-      });
-      builder.create();
-      builder.show();
-      return true;
-    }
   }
 
 }

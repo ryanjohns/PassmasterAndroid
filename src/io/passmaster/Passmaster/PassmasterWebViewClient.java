@@ -1,28 +1,22 @@
 package io.passmaster.Passmaster;
 
 import java.lang.ref.WeakReference;
-
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.net.MailTo;
+import android.net.Uri;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 public class PassmasterWebViewClient extends WebViewClient {
 
+  private final WeakReference<Activity> activityRef;
   private final String passmasterErrorHTML =
       "<html>" +
       "<head>" +
         "<style type='text/css'>" +
           "body { background-color: #8b99ab; color: #fff; text-align: center; font-family: arial, sans-serif; }" +
         "</style>" +
-        "<script type='text/javascript'>" +
-          "function MobileApp() {};" +
-          "MobileApp.updateAppCache = function() {" +
-            PassmasterJsInterface.JS_NAMESPACE + ".loadPassmaster();" +
-          "};" +
-        "</script>" +
       "</head>" +
       "<body>" +
         "<div>" +
@@ -32,8 +26,6 @@ public class PassmasterWebViewClient extends WebViewClient {
         "</div>" +
       "</body>" +
       "</html>";
-
-  private final WeakReference<Activity> activityRef;
 
   public PassmasterWebViewClient(Activity activity) {
     activityRef = new WeakReference<Activity>(activity);
@@ -51,24 +43,22 @@ public class PassmasterWebViewClient extends WebViewClient {
       final Activity activity = activityRef.get();
       if (activity != null) {
         MailTo mailTo = MailTo.parse(url);
-        Intent intent = newEmailIntent(activity, mailTo.getTo(), mailTo.getSubject(), mailTo.getBody(), mailTo.getCc());
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[] { mailTo.getTo() });
+        intent.setType("message/rfc822");
         activity.startActivity(intent);
-        view.reload();
+        return true;
       }
-    } else {
-      view.loadUrl(url);
+    } else if (url.startsWith("http") && !url.startsWith(PassmasterActivity.PASSMASTER_URL)) {
+      final Activity activity = activityRef.get();
+      if (activity != null) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+        activity.startActivity(intent);
+        return true;
+      }
     }
-    return true;
-  }
-
-  private Intent newEmailIntent(Context context, String address, String subject, String body, String cc) {
-    Intent intent = new Intent(Intent.ACTION_SEND);
-    intent.putExtra(Intent.EXTRA_EMAIL, new String[] { address });
-    intent.putExtra(Intent.EXTRA_TEXT, body);
-    intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-    intent.putExtra(Intent.EXTRA_CC, cc);
-    intent.setType("message/rfc822");
-    return intent;
+    return false;
   }
 
 }
