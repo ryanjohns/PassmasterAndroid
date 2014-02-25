@@ -2,11 +2,14 @@ package io.passmaster.Passmaster;
 
 import java.lang.ref.WeakReference;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.MailTo;
 import android.net.Uri;
+import android.view.Gravity;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 public class PassmasterWebViewClient extends WebViewClient {
 
@@ -46,15 +49,41 @@ public class PassmasterWebViewClient extends WebViewClient {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.putExtra(Intent.EXTRA_EMAIL, new String[] { mailTo.getTo() });
         intent.setType("message/rfc822");
-        activity.startActivity(intent);
+        try {
+          activity.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+          Toast toast = Toast.makeText(activity, "No mail applications found", Toast.LENGTH_LONG);
+          toast.setGravity(Gravity.CENTER, 0, 0);
+          toast.show();
+        }
         return true;
       }
-    } else if (url.startsWith("http") && !url.startsWith(PassmasterActivity.PASSMASTER_URL)) {
+    } else if (url.startsWith("bitcoin:")) {
       final Activity activity = activityRef.get();
       if (activity != null) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
-        activity.startActivity(intent);
+        try {
+          activity.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+          Toast toast = Toast.makeText(activity, "No bitcoin applications found", Toast.LENGTH_LONG);
+          toast.setGravity(Gravity.CENTER, 0, 0);
+          toast.show();
+        }
+        return true;
+      }
+    } else if ((url.startsWith("http:") || url.startsWith("https:")) && !url.startsWith(PassmasterActivity.PASSMASTER_URL)) {
+      final Activity activity = activityRef.get();
+      if (activity != null) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+        try {
+          activity.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+          Toast toast = Toast.makeText(activity, "No web browsers found", Toast.LENGTH_LONG);
+          toast.setGravity(Gravity.CENTER, 0, 0);
+          toast.show();
+        }
         return true;
       }
     }

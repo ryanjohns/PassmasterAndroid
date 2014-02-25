@@ -35,10 +35,10 @@ public final class PassmasterJsInterface {
   @JavascriptInterface
   public void copyToClipboard(String text) {
     final Activity activity = activityRef.get();
-    ClipboardManager clipboard = (ClipboardManager) activity.getApplicationContext().getSystemService(Context.CLIPBOARD_SERVICE);
+    ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
     ClipData clip = ClipData.newPlainText("Passmaster Data", text);
     clipboard.setPrimaryClip(clip);
-    Toast toast = Toast.makeText(activity.getApplicationContext(), copiedText, Toast.LENGTH_SHORT);
+    Toast toast = Toast.makeText(activity, copiedText, Toast.LENGTH_SHORT);
     toast.setGravity(Gravity.CENTER, 0, 0);
     toast.show();
   }
