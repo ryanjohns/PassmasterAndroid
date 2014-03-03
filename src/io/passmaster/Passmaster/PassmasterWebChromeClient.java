@@ -4,13 +4,11 @@ import java.lang.ref.WeakReference;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.view.Gravity;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.EditText;
-import android.widget.Toast;
 
 public class PassmasterWebChromeClient extends WebChromeClient {
 
@@ -21,12 +19,18 @@ public class PassmasterWebChromeClient extends WebChromeClient {
   }
 
   @Override
-  public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
-    result.confirm();
+  public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
     final Activity activity = activityRef.get();
-    Toast toast = Toast.makeText(activity, message, Toast.LENGTH_LONG);
-    toast.setGravity(Gravity.CENTER, 0, 0);
-    toast.show();
+    AlertDialog.Builder builder = new AlertDialog.Builder(activity, AlertDialog.THEME_HOLO_DARK);
+    builder.setTitle("Passmaster");
+    builder.setMessage(message);
+    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+      public void onClick(DialogInterface dialog, int id) {
+        result.confirm();
+      }
+    });
+    builder.create();
+    builder.show();
     return true;
   }
 

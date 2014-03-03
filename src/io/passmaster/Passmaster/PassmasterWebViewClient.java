@@ -2,14 +2,14 @@ package io.passmaster.Passmaster;
 
 import java.lang.ref.WeakReference;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.MailTo;
 import android.net.Uri;
-import android.view.Gravity;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 public class PassmasterWebViewClient extends WebViewClient {
 
@@ -52,9 +52,7 @@ public class PassmasterWebViewClient extends WebViewClient {
         try {
           activity.startActivity(intent);
         } catch (ActivityNotFoundException e) {
-          Toast toast = Toast.makeText(activity, "No mail applications found", Toast.LENGTH_LONG);
-          toast.setGravity(Gravity.CENTER, 0, 0);
-          toast.show();
+          showLoadErrorAlert(activity, "No mail applications found.");
         }
         return true;
       }
@@ -66,9 +64,7 @@ public class PassmasterWebViewClient extends WebViewClient {
         try {
           activity.startActivity(intent);
         } catch (ActivityNotFoundException e) {
-          Toast toast = Toast.makeText(activity, "No bitcoin applications found", Toast.LENGTH_LONG);
-          toast.setGravity(Gravity.CENTER, 0, 0);
-          toast.show();
+          showLoadErrorAlert(activity, "No bitcoin applications found.");
         }
         return true;
       }
@@ -80,9 +76,7 @@ public class PassmasterWebViewClient extends WebViewClient {
         try {
           activity.startActivity(intent);
         } catch (ActivityNotFoundException e) {
-          Toast toast = Toast.makeText(activity, "No web browsers found", Toast.LENGTH_LONG);
-          toast.setGravity(Gravity.CENTER, 0, 0);
-          toast.show();
+          showLoadErrorAlert(activity, "No web browsers found.");
         }
         return true;
       }
@@ -90,4 +84,16 @@ public class PassmasterWebViewClient extends WebViewClient {
     return false;
   }
 
+  private void showLoadErrorAlert(Activity activity, String message) {
+    AlertDialog.Builder builder = new AlertDialog.Builder(activity, AlertDialog.THEME_HOLO_DARK);
+    builder.setTitle("Load Error");
+    builder.setMessage(message);
+    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+      public void onClick(DialogInterface dialog, int id) {
+        // do nothing
+      }
+    });
+    builder.create();
+    builder.show();
+  }
 }
