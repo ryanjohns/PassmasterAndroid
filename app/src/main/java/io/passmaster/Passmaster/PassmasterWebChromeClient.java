@@ -15,7 +15,7 @@ public class PassmasterWebChromeClient extends WebChromeClient {
   private final WeakReference<Activity> activityRef;
 
   public PassmasterWebChromeClient(Activity activity) {
-    activityRef = new WeakReference<Activity>(activity);
+    activityRef = new WeakReference<>(activity);
   }
 
   @Override

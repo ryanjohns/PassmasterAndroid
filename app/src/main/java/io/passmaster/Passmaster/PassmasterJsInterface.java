@@ -15,7 +15,7 @@ public final class PassmasterJsInterface {
   private final WeakReference<Activity> activityRef;
 
   public PassmasterJsInterface(Activity activity, WebView webView) {
-    activityRef = new WeakReference<Activity>(activity);
+    activityRef = new WeakReference<>(activity);
     this.webView = webView;
   }
 

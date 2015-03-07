@@ -1,7 +1,6 @@
 package io.passmaster.Passmaster;
 
 import android.os.Bundle;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -13,12 +12,6 @@ import android.widget.FrameLayout;
 public class PassmasterActivity extends Activity {
 
   public static final String PASSMASTER_URL = "https://passmaster.io/";
-  private final String reloadFunction = "javascript:" +
-      "if (typeof(MobileApp) == 'object' && typeof(MobileApp.appLoaded) == 'function' && MobileApp.appLoaded() == 'YES') {" +
-        "MobileApp.updateAppCache();" +
-      "} else {" +
-        PassmasterJsInterface.JS_NAMESPACE + ".loadPassmaster();" +
-      "}";
   private FrameLayout webViewPlaceholder;
   private WebView webView;
 
@@ -32,6 +25,12 @@ public class PassmasterActivity extends Activity {
   @Override
   protected void onRestart() {
     super.onRestart();
+    String reloadFunction = "javascript:" +
+        "if (typeof(MobileApp) == 'object' && typeof(MobileApp.appLoaded) == 'function' && MobileApp.appLoaded() == 'YES') {" +
+          "MobileApp.updateAppCache();" +
+        "} else {" +
+          PassmasterJsInterface.JS_NAMESPACE + ".loadPassmaster();" +
+        "}";
     webView.loadUrl(reloadFunction);
   }
 
@@ -57,7 +56,6 @@ public class PassmasterActivity extends Activity {
     webView.saveState(outState);
   }
 
-  @SuppressLint("SetJavaScriptEnabled")
   private void initUI() {
     webViewPlaceholder = (FrameLayout) findViewById(R.id.webViewPlaceholder);
     if (webView == null) {
@@ -75,7 +73,7 @@ public class PassmasterActivity extends Activity {
       webSettings.setDatabaseEnabled(true);
       webSettings.setDomStorageEnabled(true);
       webSettings.setJavaScriptEnabled(true);
-      webSettings.setUserAgentString(webSettings.getUserAgentString() + " PassmasterAndroid/" + pInfo.versionName);
+      webSettings.setUserAgentString(webSettings.getUserAgentString() + " PassmasterAndroid/" + (pInfo != null ? pInfo.versionName : "unknown"));
       webView.setWebViewClient(new PassmasterWebViewClient(this));
       webView.setWebChromeClient(new PassmasterWebChromeClient(this));
       webView.addJavascriptInterface(new PassmasterJsInterface(this, webView), PassmasterJsInterface.JS_NAMESPACE);
