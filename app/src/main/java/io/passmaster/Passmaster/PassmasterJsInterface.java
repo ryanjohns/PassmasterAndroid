@@ -41,7 +41,7 @@ public final class PassmasterJsInterface {
 
   @JavascriptInterface
   public void checkLockTime() {
-    if (lockTime < System.currentTimeMillis() / 1000) {
+    if (lockTime > 0 && lockTime < System.currentTimeMillis() / 1000) {
       final Activity activity = activityRef.get();
       activity.runOnUiThread(new Runnable() {
         public void run() {
@@ -53,6 +53,10 @@ public final class PassmasterJsInterface {
 
   @JavascriptInterface
   public void saveLockTime(int minutes) {
-    lockTime = (System.currentTimeMillis() / 1000) + (minutes * 60);
+    if (minutes == 0) {
+      lockTime = 0;
+    } else {
+      lockTime = (System.currentTimeMillis() / 1000) + (minutes * 60);
+    }
   }
 }
