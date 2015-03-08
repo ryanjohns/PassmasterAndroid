@@ -27,11 +27,22 @@ public class PassmasterActivity extends Activity {
     super.onRestart();
     String reloadFunction = "javascript:" +
         "if (typeof(MobileApp) == 'object' && typeof(MobileApp.appLoaded) == 'function' && MobileApp.appLoaded() == 'YES') {" +
+          PassmasterJsInterface.JS_NAMESPACE + ".checkLockTime();" +
           "MobileApp.updateAppCache();" +
         "} else {" +
           PassmasterJsInterface.JS_NAMESPACE + ".loadPassmaster();" +
         "}";
     webView.loadUrl(reloadFunction);
+  }
+
+  @Override
+  protected void onPause() {
+    super.onPause();
+    String pauseFunction = "javascript:" +
+        "if (typeof(MobileApp) == 'object' && typeof(MobileApp.appLoaded) == 'function' && MobileApp.appLoaded() == 'YES') {" +
+          PassmasterJsInterface.JS_NAMESPACE + ".saveLockTime(MobileApp.getTimeoutMinutes());" +
+        "}";
+    webView.loadUrl(pauseFunction);
   }
 
   @Override

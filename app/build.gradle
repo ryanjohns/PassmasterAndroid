@@ -1,13 +1,13 @@
-apply plugin: 'com.android.application'
+apply plugin: "com.android.application"
 android {
     signingConfigs {
         release {
             Properties props = new Properties()
             props.load(new FileInputStream(file("../keystore/.signing_credentials")))
             storeFile file("../keystore/passmaster_keystore.jks")
-            storePassword props['storePassword']
-            keyAlias props['keyAlias']
-            keyPassword props['keyPassword']
+            storePassword props["storePassword"]
+            keyAlias props["keyAlias"]
+            keyPassword props["keyPassword"]
         }
     }
     compileSdkVersion 21

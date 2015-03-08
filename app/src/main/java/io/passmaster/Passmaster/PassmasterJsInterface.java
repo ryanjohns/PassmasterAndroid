@@ -13,10 +13,12 @@ public final class PassmasterJsInterface {
   public static final String JS_NAMESPACE = "AndroidJs";
   private WebView webView;
   private final WeakReference<Activity> activityRef;
+  private long lockTime;
 
   public PassmasterJsInterface(Activity activity, WebView webView) {
     activityRef = new WeakReference<>(activity);
     this.webView = webView;
+    lockTime = 0;
   }
 
   @JavascriptInterface
@@ -35,5 +37,22 @@ public final class PassmasterJsInterface {
     ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
     ClipData clip = ClipData.newPlainText("Passmaster Data", text);
     clipboard.setPrimaryClip(clip);
+  }
+
+  @JavascriptInterface
+  public void checkLockTime() {
+    if (lockTime < System.currentTimeMillis() / 1000) {
+      final Activity activity = activityRef.get();
+      activity.runOnUiThread(new Runnable() {
+        public void run() {
+          webView.loadUrl("javascript:MobileApp.lock();");
+        }
+      });
+    }
+  }
+
+  @JavascriptInterface
+  public void saveLockTime(int minutes) {
+    lockTime = (System.currentTimeMillis() / 1000) + (minutes * 60);
   }
 }
