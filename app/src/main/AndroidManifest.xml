@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="io.passmaster.Passmaster"
     android:versionCode="9"
     android:versionName="1.6" >
@@ -7,10 +8,10 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
-        android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.NoTitleBar" >
+        android:theme="@android:style/Theme.NoTitleBar"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning">
         <activity
             android:name="io.passmaster.Passmaster.PassmasterActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"

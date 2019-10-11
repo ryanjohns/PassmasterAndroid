@@ -1,21 +1,21 @@
 package io.passmaster.Passmaster;
 
-import java.lang.ref.WeakReference;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.MailTo;
 import android.net.Uri;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.lang.ref.WeakReference;
+
 public class PassmasterWebViewClient extends WebViewClient {
 
   private final WeakReference<Activity> activityRef;
 
-  public PassmasterWebViewClient(Activity activity) {
+  PassmasterWebViewClient(Activity activity) {
     activityRef = new WeakReference<>(activity);
   }
 
@@ -84,13 +84,11 @@ public class PassmasterWebViewClient extends WebViewClient {
   }
 
   private void showLoadErrorAlert(Activity activity, String message) {
-    AlertDialog.Builder builder = new AlertDialog.Builder(activity, AlertDialog.THEME_HOLO_DARK);
+    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
     builder.setTitle("Load Error");
     builder.setMessage(message);
-    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-      public void onClick(DialogInterface dialog, int id) {
-        // do nothing
-      }
+    builder.setPositiveButton("OK", (dialog, id) -> {
+      // do nothing
     });
     builder.create();
     builder.show();

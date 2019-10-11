@@ -1,10 +1,12 @@
 package io.passmaster.Passmaster;
 
-import android.os.Bundle;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
@@ -46,7 +48,7 @@ public class PassmasterActivity extends Activity {
   }
 
   @Override
-  public void onConfigurationChanged(Configuration newConfig) {
+  public void onConfigurationChanged(@NonNull Configuration newConfig) {
     if (webView != null) {
       webViewPlaceholder.removeView(webView);
     }
@@ -56,19 +58,20 @@ public class PassmasterActivity extends Activity {
   }
 
   @Override
-  protected void onRestoreInstanceState(Bundle savedInstanceState) {
+  protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
     super.onRestoreInstanceState(savedInstanceState);
     webView.restoreState(savedInstanceState);
   }
 
   @Override
-  protected void onSaveInstanceState(Bundle outState) {
+  protected void onSaveInstanceState(@NonNull Bundle outState) {
     super.onSaveInstanceState(outState);
     webView.saveState(outState);
   }
 
+  @SuppressLint("SetJavaScriptEnabled")
   private void initUI() {
-    webViewPlaceholder = (FrameLayout) findViewById(R.id.webViewPlaceholder);
+    webViewPlaceholder = findViewById(R.id.webViewPlaceholder);
     if (webView == null) {
       webView = new WebView(this);
       PackageInfo pInfo = null;
