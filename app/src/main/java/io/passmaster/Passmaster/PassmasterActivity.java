@@ -1,7 +1,6 @@
 package io.passmaster.Passmaster;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
@@ -11,8 +10,9 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 
-public class PassmasterActivity extends Activity {
+import androidx.appcompat.app.AppCompatActivity;
 
+public class PassmasterActivity extends AppCompatActivity {
   public static final String PASSMASTER_URL = "https://passmaster.io/";
   private FrameLayout webViewPlaceholder;
   private WebView webView;
@@ -95,5 +95,4 @@ public class PassmasterActivity extends Activity {
     }
     webViewPlaceholder.addView(webView);
   }
-
 }
