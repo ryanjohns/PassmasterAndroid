@@ -3,7 +3,7 @@ android {
     signingConfigs {
         release {
             Properties props = new Properties()
-            //props.load(new FileInputStream(file("../keystore/.signing_credentials")))
+            props.load(new FileInputStream(file("../keystore/.signing_credentials")))
             storeFile file("../keystore/passmaster_keystore.jks")
             storePassword props["storePassword"]
             keyAlias props["keyAlias"]
@@ -23,7 +23,7 @@ android {
             debuggable false
         }
         debug {
-            debuggable true 
+            debuggable true
         }
     }
     compileOptions {
@@ -34,10 +34,6 @@ android {
 
 dependencies {
     implementation 'androidx.biometric:biometric:1.0.1'
-    //implementation 'androidx.biometric:biometric:1.0.0-rc01'
-    //implementation 'androidx.biometric:biometric:1.0.0-alpha03'
-    //implementation 'androidx.biometric:biometric:1.0.0-alpha04'
     implementation 'com.android.support:support-annotations:28.0.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
-    //implementation 'com.android.support:support-compat:28.0.0'
 }
