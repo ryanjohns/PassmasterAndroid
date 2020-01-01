@@ -34,10 +34,6 @@ public final class PassmasterJsInterface {
   private final WeakReference<Activity> activityRef;
   private long lockTime;
 
-  private String masterPasswordHash;
-  private String userId;
-
-  private boolean promptForEncryption;
   private boolean retryPrompt;
 
   PassmasterJsInterface(Activity activity, WebView webView) {
@@ -90,12 +86,9 @@ public final class PassmasterJsInterface {
       return;
     }
 
-    this.masterPasswordHash = password;
-    this.userId = userId;
     this.retryPrompt = true;
-
-    generateSecretKey(this.userId);
-    encryptPassword();
+    generateSecretKey(userId);
+    encryptPassword(userId, password);
   }
 
   @JavascriptInterface
@@ -124,10 +117,8 @@ public final class PassmasterJsInterface {
   @JavascriptInterface
   @RequiresApi(api = Build.VERSION_CODES.M)
   public void authenticateWithTouchID(String userId) {
-    this.promptForEncryption = false;
     this.retryPrompt = true;
-    this.userId = userId;
-    biometricAuthenticate();
+    biometricAuthenticate(userId, null);
     activityRef.get().runOnUiThread(() -> webView.loadUrl("javascript:MobileApp.userFallbackForTouchID();"));
   }
 
@@ -196,13 +187,13 @@ public final class PassmasterJsInterface {
   }
 
   @RequiresApi(api = Build.VERSION_CODES.M)
-  private void encryptPassword() {
+  private void encryptPassword(String userId, String passwordHash) {
     Cipher cipher = getCipher();
     SecretKey secretKey = getSecretKey(userId);
     try {
       cipher.init(Cipher.ENCRYPT_MODE, secretKey);
       String IV = Base64.encodeToString(cipher.getIV(), Base64.URL_SAFE);
-      byte[] encryptedBytes = cipher.doFinal(masterPasswordHash.getBytes(Charset.defaultCharset()));
+      byte[] encryptedBytes = cipher.doFinal(passwordHash.getBytes(Charset.defaultCharset()));
       String encryptedString = Base64.encodeToString(encryptedBytes, Base64.URL_SAFE);
       saveUserPref(userId,"initialization vector", IV);
       saveUserPref(userId,"encrypted_password", encryptedString);
@@ -210,8 +201,7 @@ public final class PassmasterJsInterface {
       if (e instanceof UserNotAuthenticatedException) {
         if (retryPrompt) {
           retryPrompt = false;
-          promptForEncryption = true;
-          biometricAuthenticate();
+          biometricAuthenticate(userId, passwordHash);
         }
       } else {
         e.printStackTrace();
@@ -219,7 +209,7 @@ public final class PassmasterJsInterface {
     }
   }
 
-  private void decryptPassword() {
+  private void decryptPassword(String userId) {
     Cipher cipher = getCipher();
     SecretKey secretKey = getSecretKey(userId);
     try {
@@ -232,11 +222,10 @@ public final class PassmasterJsInterface {
     }
   }
 
-
   @RequiresApi(api = Build.VERSION_CODES.M)
-  public void biometricAuthenticate() {
+  public void biometricAuthenticate(String userId, String passwordHash) {
     BiometricPrompt.PromptInfo promptInfo = buildBiometricPromptInfo();
-    activityRef.get().runOnUiThread(() -> buildBiometricPrompt().authenticate(promptInfo));
+    activityRef.get().runOnUiThread(() -> buildBiometricPrompt(userId, passwordHash).authenticate(promptInfo));
   }
 
   private BiometricPrompt.PromptInfo buildBiometricPromptInfo() {
@@ -247,28 +236,37 @@ public final class PassmasterJsInterface {
   }
 
   @RequiresApi(api = Build.VERSION_CODES.M)
-  private BiometricPrompt buildBiometricPrompt() {
+  private BiometricPrompt buildBiometricPrompt(String userId, String passwordHash) {
     return new BiometricPrompt((FragmentActivity) activityRef.get(),
             Executors.newSingleThreadExecutor(),
-            biometricCallback);
+            new AuthenticationCallbackWithUserData(userId, passwordHash));
   }
 
   @RequiresApi(api = Build.VERSION_CODES.M)
-  private BiometricPrompt.AuthenticationCallback biometricCallback = new BiometricPrompt.AuthenticationCallback() {
+  public class AuthenticationCallbackWithUserData extends BiometricPrompt.AuthenticationCallback {
+    String passwordHash;
+    String userId;
+
+    public AuthenticationCallbackWithUserData(String userId, String passwordHash)
+    {
+      this.userId = userId;
+      this.passwordHash = passwordHash;
+    }
+
     @Override
     public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
       super.onAuthenticationSucceeded(result);
       try {
-        if (promptForEncryption) {
-          encryptPassword();
+        if (passwordHash != null) {
+          encryptPassword(userId, passwordHash);
         } else {
-          decryptPassword();
+          decryptPassword(userId);
         }
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
-  };
+  }
 
   private void saveUserPref(String userId, String key, String value) {
     SharedPreferences sharedPref = activityRef.get().getPreferences(Context.MODE_PRIVATE);
