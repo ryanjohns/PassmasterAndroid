@@ -2,8 +2,11 @@ package io.passmaster.Passmaster;
 
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
 import java.security.KeyStore;
+
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -17,6 +20,7 @@ import android.util.Base64;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.biometric.BiometricPrompt;
 import androidx.biometric.BiometricManager;
@@ -30,7 +34,7 @@ import javax.crypto.spec.IvParameterSpec;
 public final class PassmasterJsInterface {
 
   static final String JS_NAMESPACE = "AndroidJs";
-  private WebView webView;
+  private final WebView webView;
   private final WeakReference<Activity> activityRef;
   private long lockTime;
 
@@ -71,7 +75,7 @@ public final class PassmasterJsInterface {
     if (minutes == 0) {
       lockTime = 0;
     } else {
-      lockTime = (System.currentTimeMillis() / 1000) + (minutes * 60);
+      lockTime = (System.currentTimeMillis() / 1000) + (minutes * 60L);
     }
   }
 
@@ -103,14 +107,13 @@ public final class PassmasterJsInterface {
     boolean isSupported = touchIDSupported();
     boolean hasPassword = getUserPref(userId, "encrypted_password") != null;
     boolean userEnabled = enabled.equals("true");
-    boolean faceIDSupported = false;
 
     if (isSupported && hasPassword && !userEnabled) {
       deletePasswordForTouchID(userId);
       hasPassword = false;
     }
 
-    String params = isSupported + ", " + (hasPassword && isSupported) + ", " + faceIDSupported;
+    String params = isSupported + ", " + (hasPassword && isSupported) + ", " + false;
     activityRef.get().runOnUiThread(() -> webView.loadUrl("javascript:MobileApp.setTouchIDUsability("+ params +");"));
   }
 
@@ -125,7 +128,7 @@ public final class PassmasterJsInterface {
   private boolean touchIDSupported()
   {
     Context context = activityRef.get().getApplicationContext();
-    return (BiometricManager.from(context).canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS);
+    return (BiometricManager.from(context).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK) == BiometricManager.BIOMETRIC_SUCCESS);
   }
 
   private void deleteSecretKey(String keyAlias) {
@@ -189,6 +192,9 @@ public final class PassmasterJsInterface {
   @RequiresApi(api = Build.VERSION_CODES.M)
   private void encryptPassword(String userId, String passwordHash) {
     Cipher cipher = getCipher();
+    if (cipher == null) {
+      return;
+    }
     SecretKey secretKey = getSecretKey(userId);
     try {
       cipher.init(Cipher.ENCRYPT_MODE, secretKey);
@@ -211,11 +217,14 @@ public final class PassmasterJsInterface {
 
   private void decryptPassword(String userId) {
     Cipher cipher = getCipher();
+    if (cipher == null) {
+      return;
+    }
     SecretKey secretKey = getSecretKey(userId);
     try {
       cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(Base64.decode(getUserPref(userId,"initialization vector"), Base64.URL_SAFE)));
       byte[] decryptedBytes = cipher.doFinal(Base64.decode(getUserPref(userId,"encrypted_password"), Base64.URL_SAFE));
-      String decryptedString = new String(decryptedBytes, "UTF-8");
+      String decryptedString = new String(decryptedBytes, StandardCharsets.UTF_8);
       activityRef.get().runOnUiThread(() -> webView.loadUrl("javascript:MobileApp.unlockWithPasswordFromTouchID('" + decryptedString + "');"));
     } catch (Exception e) {
       e.printStackTrace();
@@ -244,8 +253,8 @@ public final class PassmasterJsInterface {
 
   @RequiresApi(api = Build.VERSION_CODES.M)
   public class AuthenticationCallbackWithUserData extends BiometricPrompt.AuthenticationCallback {
-    String passwordHash;
-    String userId;
+    final String passwordHash;
+    final String userId;
 
     public AuthenticationCallbackWithUserData(String userId, String passwordHash)
     {
@@ -254,7 +263,7 @@ public final class PassmasterJsInterface {
     }
 
     @Override
-    public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+    public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
       super.onAuthenticationSucceeded(result);
       try {
         if (passwordHash != null) {
@@ -268,6 +277,7 @@ public final class PassmasterJsInterface {
     }
   }
 
+  @SuppressLint("ApplySharedPref")
   private void saveUserPref(String userId, String key, String value) {
     SharedPreferences sharedPref = activityRef.get().getPreferences(Context.MODE_PRIVATE);
     SharedPreferences.Editor editor = sharedPref.edit();
@@ -277,10 +287,10 @@ public final class PassmasterJsInterface {
 
   private String getUserPref(String userId, String key) {
     SharedPreferences sharedPref = activityRef.get().getPreferences(Context.MODE_PRIVATE);
-    String value = sharedPref.getString(key + userId, null);
-    return value;
+    return sharedPref.getString(key + userId, null);
   }
 
+  @SuppressLint("ApplySharedPref")
   private void deleteUserPref(String userId, String key) {
     SharedPreferences sharedPref = activityRef.get().getPreferences(Context.MODE_PRIVATE);
     SharedPreferences.Editor editor = sharedPref.edit();

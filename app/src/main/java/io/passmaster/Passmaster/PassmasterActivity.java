@@ -5,11 +5,11 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class PassmasterActivity extends AppCompatActivity {
@@ -25,12 +25,12 @@ public class PassmasterActivity extends AppCompatActivity {
   }
 
   @Override
-  protected void onRestart() {
-    super.onRestart();
+  protected void onResume() {
+    super.onResume();
     String reloadFunction = "javascript:" +
         "if (typeof(MobileApp) == 'object' && typeof(MobileApp.appLoaded) == 'function' && MobileApp.appLoaded() == 'YES') {" +
           PassmasterJsInterface.JS_NAMESPACE + ".checkLockTime();" +
-          "MobileApp.updateAppCache();" +
+          "MobileApp.clickUnlockWithTouchID();" +
         "} else {" +
           PassmasterJsInterface.JS_NAMESPACE + ".loadPassmaster();" +
         "}";
@@ -80,10 +80,7 @@ public class PassmasterActivity extends AppCompatActivity {
       } catch (NameNotFoundException e) {
         // do nothing because this will never happen
       }
-      String cachePath = getApplicationContext().getCacheDir().getAbsolutePath();
       WebSettings webSettings = webView.getSettings();
-      webSettings.setAppCachePath(cachePath);
-      webSettings.setAppCacheEnabled(true);
       webSettings.setDatabaseEnabled(true);
       webSettings.setDomStorageEnabled(true);
       webSettings.setJavaScriptEnabled(true);
