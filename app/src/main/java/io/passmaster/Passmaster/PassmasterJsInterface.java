@@ -12,7 +12,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.security.keystore.UserNotAuthenticatedException;
@@ -21,7 +20,6 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.biometric.BiometricPrompt;
 import androidx.biometric.BiometricManager;
 import androidx.fragment.app.FragmentActivity;
@@ -80,7 +78,6 @@ public final class PassmasterJsInterface {
   }
 
   @JavascriptInterface
-  @RequiresApi(api = Build.VERSION_CODES.M)
   public void savePasswordForTouchID(String userId, String password, String enabled){
     if (!touchIDSupported()) {
       return;
@@ -118,7 +115,6 @@ public final class PassmasterJsInterface {
   }
 
   @JavascriptInterface
-  @RequiresApi(api = Build.VERSION_CODES.M)
   public void authenticateWithTouchID(String userId) {
     this.retryPrompt = true;
     biometricAuthenticate(userId, null);
@@ -144,7 +140,6 @@ public final class PassmasterJsInterface {
     }
   }
 
-  @RequiresApi(api = Build.VERSION_CODES.M)
   private void generateSecretKey(String keyAlias) {
     try {
       KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
@@ -189,7 +184,6 @@ public final class PassmasterJsInterface {
     return null;
   }
 
-  @RequiresApi(api = Build.VERSION_CODES.M)
   private void encryptPassword(String userId, String passwordHash) {
     Cipher cipher = getCipher();
     if (cipher == null) {
@@ -231,7 +225,6 @@ public final class PassmasterJsInterface {
     }
   }
 
-  @RequiresApi(api = Build.VERSION_CODES.M)
   public void biometricAuthenticate(String userId, String passwordHash) {
     BiometricPrompt.PromptInfo promptInfo = buildBiometricPromptInfo();
     activityRef.get().runOnUiThread(() -> buildBiometricPrompt(userId, passwordHash).authenticate(promptInfo));
@@ -244,14 +237,12 @@ public final class PassmasterJsInterface {
             .build();
   }
 
-  @RequiresApi(api = Build.VERSION_CODES.M)
   private BiometricPrompt buildBiometricPrompt(String userId, String passwordHash) {
     return new BiometricPrompt((FragmentActivity) activityRef.get(),
             Executors.newSingleThreadExecutor(),
             new AuthenticationCallbackWithUserData(userId, passwordHash));
   }
 
-  @RequiresApi(api = Build.VERSION_CODES.M)
   public class AuthenticationCallbackWithUserData extends BiometricPrompt.AuthenticationCallback {
     final String passwordHash;
     final String userId;
