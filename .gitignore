@@ -4,6 +4,7 @@
 .idea
 local.properties
 build/
+release/
 gen/
 bin/
 *.apk
