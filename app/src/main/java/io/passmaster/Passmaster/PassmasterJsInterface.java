@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
 import java.security.KeyStore;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -29,6 +28,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
+/** @noinspection CallToPrintStackTrace*/
 public final class PassmasterJsInterface {
 
   static final String JS_NAMESPACE = "AndroidJs";
@@ -243,6 +243,7 @@ public final class PassmasterJsInterface {
             new AuthenticationCallbackWithUserData(userId, passwordHash));
   }
 
+  /** @noinspection CallToPrintStackTrace*/
   public class AuthenticationCallbackWithUserData extends BiometricPrompt.AuthenticationCallback {
     final String passwordHash;
     final String userId;
@@ -268,12 +269,11 @@ public final class PassmasterJsInterface {
     }
   }
 
-  @SuppressLint("ApplySharedPref")
   private void saveUserPref(String userId, String key, String value) {
     SharedPreferences sharedPref = activityRef.get().getPreferences(Context.MODE_PRIVATE);
     SharedPreferences.Editor editor = sharedPref.edit();
     editor.putString(key + userId, value);
-    editor.commit();
+    editor.apply();
   }
 
   private String getUserPref(String userId, String key) {
@@ -281,11 +281,10 @@ public final class PassmasterJsInterface {
     return sharedPref.getString(key + userId, null);
   }
 
-  @SuppressLint("ApplySharedPref")
   private void deleteUserPref(String userId, String key) {
     SharedPreferences sharedPref = activityRef.get().getPreferences(Context.MODE_PRIVATE);
     SharedPreferences.Editor editor = sharedPref.edit();
     editor.remove(key + userId);
-    editor.commit();
+    editor.apply();
   }
 }
