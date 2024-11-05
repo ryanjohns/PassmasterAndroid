@@ -2,10 +2,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    tools:context=".PassmasterActivity" >
+    android:background="#8b99ab"
+    android:paddingTop="60dp"
+    android:paddingBottom="30dp"
+    tools:context=".PassmasterActivity">
 
-    <FrameLayout android:id="@+id/webViewPlaceholder"
+    <FrameLayout
+        android:id="@+id/webViewPlaceholder"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
+        android:layout_height="fill_parent"
+        android:background="#8b99ab" />
 
 </LinearLayout>
