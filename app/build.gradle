@@ -10,11 +10,11 @@ android {
             keyPassword props["keyPassword"]
         }
     }
-    compileSdk 34
+    compileSdk 35
     defaultConfig {
         applicationId "io.passmaster.Passmaster"
         minSdkVersion 26
-        targetSdkVersion 34
+        targetSdk 35
     }
     buildTypes {
         release {
